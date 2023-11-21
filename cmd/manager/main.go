@@ -18,7 +18,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
+	go_runtime "runtime"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -26,6 +28,7 @@ import (
 	"github.com/mahdi8731/redis-cluster-operator/pkg/controller/redisclusterbackup"
 	"github.com/mahdi8731/redis-cluster-operator/pkg/k8sutil"
 	"github.com/mahdi8731/redis-cluster-operator/pkg/utils"
+	"github.com/mahdi8731/redis-cluster-operator/version"
 	"github.com/spf13/pflag"
 	"gomodules.xyz/x/log"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -54,19 +57,26 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
+func printVersion() {
+	log.Info(fmt.Sprintf("Go Version: %s", go_runtime.Version()))
+	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", go_runtime.GOOS, go_runtime.GOARCH))
+	// log.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
+	log.Info(fmt.Sprintf("Version of operator: %s+%s", version.Version, version.GitSHA))
+}
+
 func main() {
-	var metricsAddr string
-	var enableLeaderElection bool
-	var probeAddr string
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
-	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
+	var metricsAddr string = "0.0.0.0:8383"
+	var enableLeaderElection bool = true
+	var probeAddr string = "0.0.0.:8585"
+	// flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
+	// flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	// flag.BoolVar(&enableLeaderElection, "leader-elect", false,
+	// 	"Enable leader election for controller manager. "+
+	// 		"Enabling this will ensure there is only one active controller manager.")
 	opts := zap.Options{
-		Development: true,
+		Development: false,
 	}
-	opts.BindFlags(flag.CommandLine)
+	// opts.BindFlags(flag.CommandLine)
 
 	pflag.CommandLine.AddFlagSet(distributedrediscluster.FlagSet())
 	pflag.CommandLine.AddFlagSet(redisclusterbackup.FlagSet())
@@ -79,6 +89,8 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+
+	printVersion()
 
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
