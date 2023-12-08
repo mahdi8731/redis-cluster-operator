@@ -24,14 +24,18 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	"github.com/mahdi8731/redis-cluster-operator/pkg/apis"
+	redisv1alpha1 "github.com/mahdi8731/redis-cluster-operator/pkg/apis/redis/v1alpha1"
+	"github.com/mahdi8731/redis-cluster-operator/pkg/controller"
 	"github.com/mahdi8731/redis-cluster-operator/pkg/controller/distributedrediscluster"
 	"github.com/mahdi8731/redis-cluster-operator/pkg/controller/redisclusterbackup"
 	"github.com/mahdi8731/redis-cluster-operator/pkg/k8sutil"
 	"github.com/mahdi8731/redis-cluster-operator/pkg/utils"
 	"github.com/mahdi8731/redis-cluster-operator/version"
 	"github.com/spf13/pflag"
-	"gomodules.xyz/x/log"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -50,6 +54,14 @@ var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
 )
+
+var log = logf.Log.WithName("cmd")
+
+// var (
+// 	metricsHost               = "0.0.0.0"
+// 	metricsPort         int32 = 8383
+// 	operatorMetricsPort int32 = 8686
+// )
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
@@ -154,6 +166,41 @@ func main() {
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
+		os.Exit(1)
+	}
+
+	// old code
+
+	log.Info("Registering Components.")
+
+	// Setup Scheme for all resources
+	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+
+	// Setup all Controllers
+	if err := controller.AddToManager(mgr); err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+
+	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
+		log.Info("Starting the WebHook.")
+		ws := mgr.GetWebhookServer()
+		ws.CertDir = "/etc/webhook/certs"
+		ws.Port = 7443
+		if err = (&redisv1alpha1.DistributedRedisCluster{}).SetupWebhookWithManager(mgr); err != nil {
+			log.Error(err, "unable to create webHook", "webHook", "DistributedRedisCluster")
+			os.Exit(1)
+		}
+	}
+
+	log.Info("Starting the Cmd.")
+
+	// Start the Cmd
+	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
+		log.Error(err, "Manager exited non-zero")
 		os.Exit(1)
 	}
 }
