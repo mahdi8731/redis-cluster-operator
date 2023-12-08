@@ -32,7 +32,6 @@ import (
 	"github.com/mahdi8731/redis-cluster-operator/pkg/k8sutil"
 	"github.com/mahdi8731/redis-cluster-operator/pkg/utils"
 	"github.com/mahdi8731/redis-cluster-operator/version"
-	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	"github.com/spf13/pflag"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -73,7 +72,7 @@ func init() {
 func printVersion() {
 	log.Info(fmt.Sprintf("Go Version: %s", go_runtime.Version()))
 	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", go_runtime.GOOS, go_runtime.GOARCH))
-	log.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
+	// log.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
 	log.Info(fmt.Sprintf("Version of operator: %s+%s", version.Version, version.GitSHA))
 }
 
