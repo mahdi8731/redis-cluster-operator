@@ -98,7 +98,7 @@ func main() {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 
 	config2.RedisConf().AddFlags(pflag.CommandLine)
-	flag.Parse()
+	pflag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
