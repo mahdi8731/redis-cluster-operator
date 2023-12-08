@@ -35,7 +35,6 @@ import (
 	"github.com/spf13/pflag"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -168,12 +167,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting manager")
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
-		os.Exit(1)
-	}
-
 	// old code
 
 	log.Info("Registering Components.")
@@ -201,11 +194,18 @@ func main() {
 		}
 	}
 
-	log.Info("Starting the Cmd.")
+	// log.Info("Starting the Cmd.")
 
-	// Start the Cmd
-	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
-		log.Error(err, "Manager exited non-zero")
+	// // Start the Cmd
+	// if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
+	// 	log.Error(err, "Manager exited non-zero")
+	// 	os.Exit(1)
+	// }
+
+	setupLog.Info("starting manager")
+	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+
 }
