@@ -161,7 +161,8 @@ func (r *ReconcileRedisClusterBackup) create(reqLogger logr.Logger, backup *redi
 		)
 		return err
 	}
-	backup.Labels = make(map[string]string)
+	fmt.Println("from create backup: ", backup.Labels)
+	// backup.Labels = make(map[string]string)
 	backup.Labels[redisv1alpha1.LabelClusterName] = backup.Spec.RedisClusterName
 	backup.Labels[redisv1alpha1.LabelBackupStatus] = string(redisv1alpha1.BackupPhaseRunning)
 	if err := r.crController.UpdateCR(backup); err != nil {
