@@ -51,6 +51,7 @@ func (r *ReconcileRedisClusterBackup) create(reqLogger logr.Logger, backup *redi
 	}
 
 	if err := r.ValidateBackup(backup); err != nil {
+		reqLogger.Error(err, "from validate backup")
 		if k8sutil.IsRequestRetryable(err) {
 			return err
 		}
