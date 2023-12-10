@@ -196,9 +196,11 @@ func (r *ReconcileRedisClusterBackup) create(reqLogger logr.Logger, backup *redi
 }
 
 func (r *ReconcileRedisClusterBackup) ValidateBackup(backup *redisv1alpha1.RedisClusterBackup) error {
+	fmt.Println("before validate: ", backup.Labels)
 	if backup.Labels == nil {
 		backup.Labels = make(map[string]string)
 	}
+	fmt.Println("before validate: ", backup.Labels)
 	if err := backup.Validate(); err != nil {
 		return err
 	}
