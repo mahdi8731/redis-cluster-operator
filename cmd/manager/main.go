@@ -96,15 +96,10 @@ func main() {
 	// Add flags registered by imported packages (e.g. glog and
 	// controller-runtime)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	log.Info("****************test***************")
 
 	config2.RedisConf().AddFlags(pflag.CommandLine)
 
-	log.Info("****************test***************")
-
 	pflag.Parse()
-
-	log.Info("****************test***************")
 
 	printVersion()
 
